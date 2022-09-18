@@ -38,6 +38,25 @@ namespace Demo
                 .BindRuntimeType<Pet>()
                 .AddResolver("Query", "pet", (context) =>
                 {
+                    // HTTP Header - Authorization - token
+                    var token = string.Empty;
+                    var httpContext = context.ContextData["HttpContext"] as DefaultHttpContext;
+                    if( httpContext != null ) 
+                    {
+                        if( httpContext.Request.Headers.ContainsKey( "Authorization" ) )
+                        {
+                            var items = httpContext.Request.Headers["Authorization"];
+                            foreach( var item in items )
+                            {
+                                if( !string.IsNullOrEmpty(item) )
+                                {
+                                    token = item.Substring( "token ".Length );
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
                     var id = context.ArgumentValue<string>("id");
                     return new Pet{ Id = id, Name = "kijitora" };
                 })
