@@ -1,8 +1,8 @@
 @baseUrl = http://localhost:5000
 #@baseUrl = https://localhost:5001
 
-
 ###
+# @name login
 POST  {{baseUrl}}/graphql/
 Content-Type: application/json
 X-Request-Type: GraphQL
@@ -19,9 +19,15 @@ mutation login( $username: String, $password: String ) {
 }
 
 ###
+
+ @token =  {{login.response.body.data.login.token}}
+
+###
+# @name pet
 POST  {{baseUrl}}/graphql/
 Content-Type: application/json
 X-Request-Type: GraphQL
+Authorization: token {{token}}
 
 query( $id: String ) {
     pet( id: $id ) {
@@ -33,3 +39,5 @@ query( $id: String ) {
 {
     "id": "1234"
 }
+
+###
