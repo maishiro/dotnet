@@ -1,0 +1,24 @@
+
+type Pet {
+    id: String
+    name: String
+}
+
+type TokenPayload {
+    token: String
+}
+
+input UserName {
+    username: String
+    password: String
+}
+
+type Query {
+    pet(
+        id: String
+    ): Pet
+}
+
+type Mutation {
+	login( input: UserName ): TokenPayload
+}
