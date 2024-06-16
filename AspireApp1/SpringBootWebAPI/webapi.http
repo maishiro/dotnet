@@ -1,0 +1,7 @@
+@url_base = http://localhost:8080
+
+###
+GET {{url_base}}/hello?name=name
+
+###
+GET {{url_base}}/weatherforecast
