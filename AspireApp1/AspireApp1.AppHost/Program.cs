@@ -25,8 +25,10 @@ var webapi = builder.AddExecutable( "webapi",
                                     "D:\\work\\dotnet\\dotnet\\AspireApp1\\SpringBootWebAPI\\target",
                                     ["-javaagent:opentelemetry-javaagent.jar", "-Dotel.service.name=jaeger", "-jar", "demo-0.0.1-SNAPSHOT.jar"])
                     .WithHttpEndpoint(targetPort: 8080, name: "apiservice")
+                    .WithExternalHttpEndpoints()
                     .WithOtlpExporter();
-var apiservice = webapi.GetEndpoint("apiservice");
+//var apiservice = webapi.GetEndpoint("apiservice");
+var apiservice = webapi.GetEndpoint("http");
 
 builder.AddProject<Projects.AspireApp1_Web>("webfrontend")
     .WithExternalHttpEndpoints()
