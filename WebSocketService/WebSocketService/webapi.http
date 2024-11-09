@@ -1,0 +1,19 @@
+###
+POST http://localhost:5110/api/Send
+Content-Type: application/json
+Accept: application/json
+
+{
+    "message": {
+        "test": 1
+    }
+}
+
+###
+POST http://localhost:5110/api/Send
+Content-Type: application/json
+Accept: application/json
+
+{
+    "message": "test"
+}
