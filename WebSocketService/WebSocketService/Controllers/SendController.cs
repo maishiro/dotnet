@@ -26,7 +26,7 @@ namespace WebSocketWindowsService.Controllers
             str = objJSON.ToString( Formatting.None );
             await _webSocketHandler.SendNotification( str );
 
-            // メッセージをエコーバック
+            // 繝｡繝�繧ｻ繝ｼ繧ｸ繧偵お繧ｳ繝ｼ繝舌ャ繧ｯ
             var response = new {
                 status = "Message sent successfully",
                 data = message
