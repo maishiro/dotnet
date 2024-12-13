@@ -1,0 +1,19 @@
+dotnet new sln -n GrafanaGraphqlService
+
+dotnet new web -n GrafanaGraphqlService
+#dotnet new graphql -n GrafanaGraphqlService2
+
+
+cd GrafanaGraphqlService
+
+dotnet add package HotChocolate.AspNetCore
+
+dotnet add package Microsoft.Extensions.Hosting.WindowsServices
+dotnet add package Newtonsoft.Json
+dotnet add package Microsoft.Extensions.Http
+
+
+
+dotnet sln add GrafanaGraphqlService/GrafanaGraphqlService.csproj
+dotnet sln add MeasureApi/MeasureApi.csproj
+

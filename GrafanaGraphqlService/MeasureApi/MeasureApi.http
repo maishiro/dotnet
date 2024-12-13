@@ -1,0 +1,6 @@
+@MeasureApi_HostAddress = http://localhost:5107
+
+GET {{MeasureApi_HostAddress}}/temperature/
+Accept: application/json
+
+###

@@ -1,0 +1,27 @@
+@URL_BASE=http://localhost:5005/graphql
+
+###
+POST {{URL_BASE}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+query GetBook {
+    book {
+      title
+      author {
+        name
+      }
+    }
+}
+
+###
+POST {{URL_BASE}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+query GetMetricHistory {
+  metricHistory {
+    timestamp
+    value
+  }
+}

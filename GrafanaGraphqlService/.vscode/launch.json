@@ -1,0 +1,36 @@
+{
+    // IntelliSense を使用して利用可能な属性を学べます。
+    // 既存の属性の説明をホバーして表示します。
+    // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+    {
+      "name": "MeasureApi",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/MeasureApi/bin/Debug/net8.0/MeasureApi.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}/MeasureApi",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": "GrafanaGraphqlService",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/GrafanaGraphqlService/bin/Debug/net8.0/GrafanaGraphqlService.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}/GrafanaGraphqlService",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    }
+  ],
+  "compounds": [
+    {
+      "name": "マルチスタートアップ",
+      "configurations": ["MeasureApi", "GrafanaGraphqlService"]
+    }
+  ]
+}
