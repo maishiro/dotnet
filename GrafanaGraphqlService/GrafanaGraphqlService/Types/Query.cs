@@ -27,7 +27,11 @@ public class Query
             }
         };
 
-    public List<MeasTemp> GetMetricHistory() =>
-        _dataCollector.GetHistoricalData("",0,2).Select( x => new MeasTemp() { timestamp = DateTimeOffset.FromUnixTimeSeconds( x.Timestamp ).DateTime, value = x.Value } ).ToList();
+    [UseFiltering]
+    public IQueryable<MeasTemp> GetMetricHistory( DateTime from, DateTime to ) =>
+        _dataCollector
+            .GetHistoricalData( "", new DateTimeOffset(from).ToUnixTimeSeconds(), new DateTimeOffset(to).ToUnixTimeSeconds() )
+            .Select( x => new MeasTemp() { timestamp = DateTimeOffset.FromUnixTimeSeconds( x.Timestamp ).DateTime, value = x.Value } )
+            .AsQueryable();
 
 }
