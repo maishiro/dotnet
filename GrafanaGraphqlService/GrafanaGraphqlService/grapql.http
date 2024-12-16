@@ -20,7 +20,7 @@ Content-Type: application/json
 X-REQUEST-TYPE: GraphQL
 
 query GetMetricHistory {
-  metricHistory {
+  metricHistory(from: "2024-10-01T00:00:00z", to: "2025-01-01T00:00:00z") {
     timestamp
     value
   }

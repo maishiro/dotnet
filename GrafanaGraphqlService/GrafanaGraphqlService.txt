@@ -6,7 +6,9 @@ dotnet new web -n GrafanaGraphqlService
 
 cd GrafanaGraphqlService
 
-dotnet add package HotChocolate.AspNetCore
+dotnet add package HotChocolate.AspNetCore --version 14.2.0
+dotnet add package HotChocolate.Types --version 14.2.0
+dotnet add package HotChocolate.Data --version 14.2.0
 
 dotnet add package Microsoft.Extensions.Hosting.WindowsServices
 dotnet add package Newtonsoft.Json

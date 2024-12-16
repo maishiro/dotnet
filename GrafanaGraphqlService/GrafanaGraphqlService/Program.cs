@@ -9,7 +9,8 @@ builder.Host.UseWindowsService();
 
 builder.Services
     .AddGraphQLServer()
-    .AddQueryType<Query>();
+    .AddQueryType<Query>()
+    .AddFiltering();
 
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<DataCollectorService>();
