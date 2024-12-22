@@ -1,10 +1,9 @@
-using GrafanaGraphqlService.DataCollector;
+﻿using GrafanaGraphqlService.DataCollector;
+using GrafanaGraphqlService.Services;
 using GrafanaGraphqlService.Types;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// builder.Services.AddSingleton<DataCollectorService>();
-// builder.Services.AddHostedService<DataCollectorService>();
 builder.Host.UseWindowsService();
 
 builder.Services
@@ -13,6 +12,7 @@ builder.Services
     .AddFiltering();
 
 builder.Services.AddHttpClient();
+builder.Services.AddSingleton<ApiService>();
 builder.Services.AddSingleton<DataCollectorService>();
 builder.Services.AddHostedService( sp => sp.GetRequiredService<DataCollectorService>() );
 

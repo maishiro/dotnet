@@ -5,14 +5,12 @@ namespace GrafanaGraphqlService.Types;
 public class Query
 {
     private readonly ILogger<Query> _logger;
-    private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
     private readonly DataCollectorService _dataCollector;
         
-    public Query( ILogger<Query> logger, IHttpClientFactory httpClientFactory, IConfiguration configuration, DataCollectorService dataCollector )
+    public Query( ILogger<Query> logger, IConfiguration configuration, DataCollectorService dataCollector )
     {
         _logger = logger;
-        _httpClientFactory = httpClientFactory;
         _configuration = configuration;
         _dataCollector = dataCollector;
     }

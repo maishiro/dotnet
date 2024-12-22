@@ -1,4 +1,4 @@
-namespace GrafanaGraphqlService.Types;
+﻿namespace GrafanaGraphqlService.Types;
 
 public class MeasTemp
 {

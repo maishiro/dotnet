@@ -1,23 +1,20 @@
-using GrafanaGraphqlService.Models.Enums;
+﻿using GrafanaGraphqlService.Models.Enums;
 using GrafanaGraphqlService.Models.Types;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using GrafanaGraphqlService.Services;
 
 namespace GrafanaGraphqlService.DataCollector;
 
 public class DataCollectorService : BackgroundService
 {
     private readonly ILogger<DataCollectorService> _logger;
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ApiService _apiService;
     private readonly IConfiguration _configuration;
     private readonly List<(long Timestamp, double Value)> _collectedData = new();
 
-    public DataCollectorService(ILogger<DataCollectorService> logger, IHttpClientFactory httpClientFactory, IConfiguration configuration)
+    public DataCollectorService( ILogger<DataCollectorService> logger, ApiService apiService, IConfiguration configuration )
     {
         _logger = logger;
-        _httpClientFactory = httpClientFactory;
+        _apiService = apiService;
         _configuration = configuration;
     }
 
@@ -28,7 +25,7 @@ public class DataCollectorService : BackgroundService
             try
             {
                 await CollectData();
-                await Task.Delay(TimeSpan.FromMinutes(_configuration.GetValue<int>("DataCollectionIntervalMinutes", 5)), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(_configuration.GetValue<int>( "ApiSettings:DataCollectionIntervalMinutes", 5)), stoppingToken);
             }
             catch (Exception ex)
             {
@@ -41,21 +38,22 @@ public class DataCollectorService : BackgroundService
     {
         _logger.LogInformation( $"CollectData() start" );
 
-        var client = _httpClientFactory.CreateClient();
-        var response = await client.GetAsync(_configuration["DataApiUrl"]);
-        response.EnsureSuccessStatusCode();
-
-        var content = await response.Content.ReadAsStringAsync();
         try
         {
-            var data = JObject.Parse(content);
+            var interval = _configuration.GetValue<int>("ApiSettings:DataCollectionIntervalMinutes");
+            var historyHours = _configuration.GetValue<int>("ApiSettings:HistoryHours");
 
-            var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            var value = data["temperatureC"].Value<double>();
+            var now = DateTime.Now;
+            var end = now.AddMinutes( -now.Minute % interval ).AddSeconds( -now.Second );
+            var start = end.AddHours( -historyHours );
 
-            lock (_collectedData)
+            var result = await _apiService.FetchDataAsync( start, end );
+            if( result != null )
             {
-                _collectedData.Add((timestamp, value));
+                lock( _collectedData )
+                {
+                    _collectedData.Add( ( new DateTimeOffset(result.timestamp).ToUnixTimeSeconds(), result.value ) );
+                }
             }
         }
         catch( Exception ex )
