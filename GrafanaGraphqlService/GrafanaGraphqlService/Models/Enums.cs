@@ -1,5 +1,4 @@
-// namespace YourNamespace.Models.GraphQL
-namespace GrafanaGraphqlService.Models.Enums;
+﻿namespace GrafanaGraphqlService.Models.Enums;
 
 public enum TimeOrdering
 {

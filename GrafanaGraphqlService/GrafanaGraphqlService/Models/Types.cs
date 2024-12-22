@@ -1,4 +1,4 @@
-namespace GrafanaGraphqlService.Models.Types;
+﻿namespace GrafanaGraphqlService.Models.Types;
 
 public class Dimension
 {
