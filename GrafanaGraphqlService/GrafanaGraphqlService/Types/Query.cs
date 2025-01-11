@@ -29,7 +29,7 @@ public class Query
     public IQueryable<MeasTemp> GetMetricHistory( DateTime from, DateTime to ) =>
         _dataCollector
             .GetHistoricalData( "", new DateTimeOffset(from).ToUnixTimeSeconds(), new DateTimeOffset(to).ToUnixTimeSeconds() )
-            .Select( x => new MeasTemp() { timestamp = DateTimeOffset.FromUnixTimeSeconds( x.Timestamp ).DateTime, value = x.Value } )
+            //.Select( x => new MeasTemp() { timestamp = DateTimeOffset.FromUnixTimeSeconds( x.Timestamp ).DateTime, values = x.Value } )
             .AsQueryable();
 
 }

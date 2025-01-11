@@ -2,7 +2,7 @@
 
 public class MeasTemp
 {
-    public DateTime timestamp { get; set; }
+    public DateTime Timestamp { get; set; }
 
-    public double value { get; set; }
+    public double Value { get; set; }
 }

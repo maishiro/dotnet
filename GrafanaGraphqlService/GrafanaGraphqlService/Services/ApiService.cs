@@ -1,4 +1,4 @@
-﻿using GrafanaGraphqlService.Types;
+﻿using GrafanaGraphqlService.Models;
 using Newtonsoft.Json.Linq;
 
 namespace GrafanaGraphqlService.Services
@@ -16,7 +16,7 @@ namespace GrafanaGraphqlService.Services
             _apiUrl = configuration ["ApiSettings:ApiUrl"];
         }
 
-        public async Task<MeasTemp> FetchDataAsync( DateTime start, DateTime end )
+        public async Task<StockMeasTemp> FetchDataAsync( DateTime start, DateTime end )
         {
             try
             {
@@ -27,9 +27,11 @@ namespace GrafanaGraphqlService.Services
 
                     var content = await response.Content.ReadAsStringAsync();
 
-                    var data = JObject.Parse(content);
-                    var value = data["temperatureC"].Value<double>();
-                    return new MeasTemp { timestamp = timestamp, value = value };
+                    if( content.TrimStart().StartsWith( "[" ) )
+                    {
+                        var data = JArray.Parse(content);
+                        return new StockMeasTemp { timestamp = timestamp, values = data };
+                    }
                 }
             }
             catch( Exception ex )
@@ -37,10 +39,7 @@ namespace GrafanaGraphqlService.Services
                 _logger.LogError( $"{ex.Message}", ex );
             }
 
-            return new MeasTemp {
-                timestamp = DateTime.Now,
-                value = 0
-            };
+            throw new Exception( "Failed to fetch data" );
         }
     }
 }
