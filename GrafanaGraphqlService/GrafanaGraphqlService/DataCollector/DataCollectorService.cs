@@ -1,6 +1,8 @@
 ﻿using GrafanaGraphqlService.Models.Enums;
 using GrafanaGraphqlService.Models.Types;
 using GrafanaGraphqlService.Services;
+using GrafanaGraphqlService.Types;
+using Newtonsoft.Json.Linq;
 
 namespace GrafanaGraphqlService.DataCollector;
 
@@ -9,7 +11,7 @@ public class DataCollectorService : BackgroundService
     private readonly ILogger<DataCollectorService> _logger;
     private readonly ApiService _apiService;
     private readonly IConfiguration _configuration;
-    private readonly List<(long Timestamp, double Value)> _collectedData = new();
+    private readonly List<(long Timestamp, JArray Value)> _collectedData = new();
 
     public DataCollectorService( ILogger<DataCollectorService> logger, ApiService apiService, IConfiguration configuration )
     {
@@ -52,7 +54,7 @@ public class DataCollectorService : BackgroundService
             {
                 lock( _collectedData )
                 {
-                    _collectedData.Add( ( new DateTimeOffset(result.timestamp).ToUnixTimeSeconds(), result.value ) );
+                    _collectedData.Add( ( new DateTimeOffset(result.timestamp).ToUnixTimeSeconds(), result.values ) );
                 }
             }
         }
@@ -92,12 +94,16 @@ public class DataCollectorService : BackgroundService
             : values.Where( v => v.Contains( filter, StringComparison.OrdinalIgnoreCase ) );
     }
 
-    public IEnumerable<(long Timestamp, double Value)> GetHistoricalData(string metric, long startDate, long endDate)
+    public IEnumerable<MeasTemp> GetHistoricalData(string metric, long startDate, long endDate)
     {
         lock (_collectedData)
         {
             return _collectedData
                 .Where(d => d.Timestamp >= startDate && d.Timestamp <= endDate)
+                .Select( d => new MeasTemp {
+                    Timestamp = DateTimeOffset.FromUnixTimeSeconds( d.Timestamp ).DateTime,
+                    Value = d.Value.Last()["temperatureC"].Value<float>()
+                } )
                 .ToList();
         }
     }
@@ -106,26 +112,31 @@ public class DataCollectorService : BackgroundService
     {
         lock (_collectedData)
         {
-            return _collectedData.LastOrDefault().Value;
+            return _collectedData.LastOrDefault().Value.Last().Value<float>();
         }
     }
 
-    public IEnumerable<(long Timestamp, double Value)> GetAggregatedData(string metric, long startDate, long endDate, AggregateType aggregateType, long intervalMs)
+    public IEnumerable<MeasTemp> GetAggregatedData( string metric, long startDate, long endDate, AggregateType aggregateType, long intervalMs )
     {
-        lock (_collectedData)
+        lock( _collectedData )
         {
             var data = _collectedData
                 .Where(d => d.Timestamp >= startDate && d.Timestamp <= endDate)
+                .Select( d => new MeasTemp
+                {
+                    Timestamp = DateTimeOffset.FromUnixTimeSeconds( d.Timestamp ).DateTime,
+                    Value = d.Value.Last()["temperatureC"].Value<float>()
+                } )
                 .ToList();
 
-            return AggregateData(data, aggregateType, intervalMs);
+            return AggregateData( data, aggregateType, intervalMs );
         }
     }
 
-    private IEnumerable<(long Timestamp, double Value)> AggregateData(List<(long Timestamp, double Value)> data, AggregateType aggregateType, long intervalMs)
+    private IEnumerable<MeasTemp> AggregateData( List<MeasTemp> data, AggregateType aggregateType, long intervalMs )
     {
         var groupedData = data
-            .GroupBy(d => d.Timestamp / (intervalMs / 1000))
+            .GroupBy(d => d.Timestamp.Ticks / (intervalMs / 1000))
             .Select(g => new
             {
                 Timestamp = g.Key * (intervalMs / 1000),
@@ -134,11 +145,11 @@ public class DataCollectorService : BackgroundService
 
         return aggregateType switch
         {
-            AggregateType.Average => groupedData.Select(g => (g.Timestamp, g.Values.Average())),
-            AggregateType.Max => groupedData.Select(g => (g.Timestamp, g.Values.Max())),
-            AggregateType.Min => groupedData.Select(g => (g.Timestamp, g.Values.Min())),
-            AggregateType.Count => groupedData.Select(g => (g.Timestamp, (double)g.Values.Count())),
-            _ => throw new ArgumentException("不正な集計タイプです", nameof(aggregateType))
+            AggregateType.Average => groupedData.Select( g => new MeasTemp { Timestamp = DateTimeOffset.FromUnixTimeSeconds( g.Timestamp ).DateTime, Value = g.Values.Average() } ),
+            AggregateType.Max => groupedData.Select( g => new MeasTemp { Timestamp = DateTimeOffset.FromUnixTimeSeconds( g.Timestamp ).DateTime, Value = g.Values.Max() } ),
+            AggregateType.Min => groupedData.Select( g => new MeasTemp { Timestamp = DateTimeOffset.FromUnixTimeSeconds( g.Timestamp ).DateTime, Value = g.Values.Min() } ),
+            AggregateType.Count => groupedData.Select( g => new MeasTemp { Timestamp = DateTimeOffset.FromUnixTimeSeconds( g.Timestamp ).DateTime, Value = (double)g.Values.Count() } ),
+            _ => throw new ArgumentException( "不正な集計タイプです", nameof( aggregateType ) )
         };
     }
 

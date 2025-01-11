@@ -16,23 +16,30 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+var summaries = new[]
+{
+    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+};
+
 app.MapGet("/temperature", () =>
 {
-    var measure =
+    var measures =  Enumerable.Range(1, 5).Select(index =>
         new MeasureTemperature
         (
-            // DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            //DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
             DateTimeOffset.Now,
-            Random.Shared.Next(-20, 55)
-        );
-    return measure;
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
+    return measures;
 })
 .WithName("GetMeasureTemperature")
 .WithOpenApi();
 
 app.Run();
 
-record MeasureTemperature(DateTimeOffset DateTime, int TemperatureC)
+record MeasureTemperature( DateTimeOffset DateTime, int TemperatureC, string? Summary )
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
