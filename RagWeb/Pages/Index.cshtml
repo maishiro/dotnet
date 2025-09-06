@@ -1,0 +1,47 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "RAG WebUI";
+}
+
+<h2>📚 .NET + Ollama RAG</h2>
+
+<form method="post" enctype="multipart/form-data">
+  <div>
+    <label>ドキュメントをアップロード（.txt）</label>
+    <input type="file" name="upload" />
+    <button type="submit" formaction="?handler=Upload">追加</button>
+  </div>
+</form>
+
+@if (!string.IsNullOrWhiteSpace(Model.UploadStatus))
+{
+  <p>@Model.UploadStatus</p>
+}
+
+<hr/>
+
+<form method="post">
+  <div>
+    <label>質問を入力してください</label><br/>
+    <input type="text" name="query" value="@Model.Query" style="width: 60%;" />
+    <button type="submit" formaction="?handler=Ask">検索＆回答</button>
+  </div>
+</form>
+
+@if (!string.IsNullOrWhiteSpace(Model.Answer))
+{
+  <h3>回答</h3>
+  <pre>@Model.Answer</pre>
+}
+
+@if (Model.ContextChunks?.Any() == true)
+{
+  <h4>参照コンテキスト</h4>
+  <ol>
+  @foreach (var c in Model.ContextChunks)
+  {
+      <li><pre>@c.Content</pre></li>
+  }
+  </ol>
+}
