@@ -1,0 +1,15 @@
+# ビルド出力
+bin/
+obj/
+
+# Visual Studioの一時ファイル
+.vs/
+*.user
+*.suo
+
+# NuGetパッケージ
+packages/
+
+# ローカル設定
+*.log
+*.tmp
