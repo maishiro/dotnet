@@ -9,9 +9,14 @@ namespace dfSelfHostWebAPI.Controllers
     /// </summary>
     public class HelloController : ApiController
     {
+        private readonly ILogger<HelloController> _logger;
         private readonly IMyService _service;
 
-        public HelloController( IMyService service ) => _service = service;
+        public HelloController( ILogger<HelloController> logger, IMyService service )
+        {
+            _logger = logger;
+            _service = service;
+        }
 
         /// <summary>
         /// 指定された名前に対して挨拶メッセージを返します
@@ -20,6 +25,10 @@ namespace dfSelfHostWebAPI.Controllers
         /// <returns>挨拶メッセージ</returns>
         [HttpGet, Route( "api/hello/{name}" )]
         [ResponseType(typeof(string))]
-        public IHttpActionResult Get( string name ) => Ok( _service.Greet( name ) );
+        public IHttpActionResult Get( string name )
+        {
+            _logger.Info( $"Get called with name: {name}" );
+            return Ok( _service.Greet( name ) );
+        }
     }
 }

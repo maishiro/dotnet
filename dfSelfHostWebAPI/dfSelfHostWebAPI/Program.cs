@@ -17,6 +17,8 @@ namespace dfSelfHostWebAPI
 
         static void Main( string [] args )
         {
+            log4net.Config.XmlConfigurator.Configure();
+
             var port = DefaultPort;
             if (args.Length > 0 && int.TryParse(args[0], out int customPort))
             {
@@ -32,6 +34,9 @@ namespace dfSelfHostWebAPI
             // Simple Injector 設定
             var container = new Container();
             container.Options.DefaultScopedLifestyle = new AsyncScopedLifestyle();
+            // オープンジェネリック登録を使用
+            container.Register(typeof(ILogger<>), typeof(Log4NetLogger<>), Lifestyle.Singleton);
+
             container.Register<IMyService, MyService>( Lifestyle.Scoped );
             container.RegisterWebApiControllers( config );
             container.Verify();
