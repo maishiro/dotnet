@@ -4,15 +4,18 @@ using NLog.Targets;
 using OpenTelemetry;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Trace;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 
 public class AspireDashboardFixture : IDisposable
 {
     // テストプロジェクト固有のActivitySourceを定義
     public static readonly ActivitySource MyActivitySource = new("MyTestProject.Tests");
     private readonly TracerProvider? _tracerProvider;
+    private readonly MeterProvider? _meterProvider;
 
     public AspireDashboardFixture()
     {
@@ -52,11 +55,26 @@ public class AspireDashboardFixture : IDisposable
         // NLogに反映
         LogManager.Configuration = config;
 
+
+        // Create a resource with service information
+        var resource = ResourceBuilder.CreateDefault().AddService(serviceName: "otlp-demo", serviceVersion: "1.0.0");
         // --- OpenTelemetry Traceの設定 ---
         _tracerProvider = Sdk.CreateTracerProviderBuilder()
             .AddSource(MyActivitySource.Name)
-            .SetResourceBuilder(OpenTelemetry.Resources.ResourceBuilder.CreateDefault().AddService("xUnit-Tests"))
+            .SetResourceBuilder(resource)
             .AddHttpClientInstrumentation() // これによりHttpClientのコールが自動的にトレースされる
+            .AddOtlpExporter(opt => {
+                opt.Endpoint = new Uri(Environment.GetEnvironmentVariable("ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL") ?? "http://localhost:19140");
+                string? apiKey = Environment.GetEnvironmentVariable("ASPIRE_DASHBOARD_OTLP_PRIMARY_API_KEY");
+                if (!string.IsNullOrEmpty(apiKey)) opt.Headers = $"x-otlp-api-key={apiKey}";
+            })
+            .Build();
+        // --- OpenTelemetry Metricsの設定 ---
+        _meterProvider = Sdk.CreateMeterProviderBuilder()
+            .AddMeter("MyCompany.MyProduct.MyLibrary")
+            .SetResourceBuilder(resource)
+            .AddAspNetCoreInstrumentation()
+            .AddConsoleExporter()
             .AddOtlpExporter(opt => {
                 opt.Endpoint = new Uri(Environment.GetEnvironmentVariable("ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL") ?? "http://localhost:19140");
                 string? apiKey = Environment.GetEnvironmentVariable("ASPIRE_DASHBOARD_OTLP_PRIMARY_API_KEY");
@@ -67,6 +85,7 @@ public class AspireDashboardFixture : IDisposable
 
     public void Dispose()
     {
+        _meterProvider?.Dispose();
         _tracerProvider?.Dispose();
         LogManager.Shutdown();
     }
