@@ -13,10 +13,15 @@ public class WebTests
         await app.StartAsync();
 
         // Act
+        var webApiClient = app.CreateHttpClient("webapi");
+        var respWebAPI = await webApiClient.GetAsync("/weatherforecast");
+
+        // Act
         var httpClient = app.CreateHttpClient("webfrontend");
         var response = await httpClient.GetAsync("/");
 
         // Assert
+        Assert.Equal(HttpStatusCode.OK, respWebAPI.StatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 }

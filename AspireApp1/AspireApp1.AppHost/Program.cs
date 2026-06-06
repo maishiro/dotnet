@@ -29,29 +29,26 @@ var martdb = builder.AddPostgres("mart", martUsername, martPassword)
 //                    .WithEndpoint( port: 5438, targetPort: 5432, name:"martdb" );
 //var martdb = mart.GetEndpoint("martdb");
 
-var apiservice = builder.AddSpringApp(
-					    "webapi",
-                        workingDirectory: "../SpringBootWebAPI/target/",
-                        new JavaAppExecutableResourceOptions()
+var apiservice = builder.AddExecutable(
+					    name: "webapi",
+                        command: @"java.exe",
+                        args: new[]
                         {
-                            ApplicationName = "demo-0.0.1-SNAPSHOT.jar",
-                            Port = 8080,
-                            OtelAgentPath = "./",
-                        })
-                        .WithReference(lakedb)
-                        .WithReference(martdb)
-                        .WithHttpEndpoint( port:8080, targetPort: 8080, name:"webapi", isProxied: false )
-                        .PublishAsDockerFile(
-                        [
-                            new DockerBuildArg( "JAR_NAME", "demo-0.0.1-SNAPSHOT.jar" ),
-                            new DockerBuildArg( "AGENT_PATH", "/" ),
-                            new DockerBuildArg( "SERVER_PORT", "8080" ),
-                        ]);
+                            "-jar",
+                            "demo-0.0.1-SNAPSHOT.jar",
+                            "--server.port=8080"
+                        },
+                        workingDirectory: "../SpringBootWebAPI/target"
+                    )
+                    .WithReference(lakedb)
+                    .WithReference(martdb)
+                    .WaitFor(lakedb)
+                    .WaitFor(martdb)
+                    .WithHttpEndpoint( name:"http", port:8080, targetPort: 8080, isProxied: false );
 
 builder.AddProject<Projects.AspireApp1_Web>("webfrontend")
     .WithExternalHttpEndpoints()
-    .WithReference(broker)
-    .WithReference(apiservice);
+    .WithReference(broker);
 
 
 
